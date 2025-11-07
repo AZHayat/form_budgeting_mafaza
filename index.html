@@ -48,21 +48,20 @@
 
   .field{display:flex;flex-direction:column;}
   label{font-size:12px;color:var(--muted);margin-bottom:6px;}
-  input[type="text"],input[type="number"],textarea,.select,.searchable{
+  input[type="text"],input[type="number"],input[type="date"],textarea,.select{
     border:1px solid #e6e9ef;
     padding:10px 12px;
     border-radius:10px;
     font-size:15px;
     transition:box-shadow .18s ease,transform .12s ease;
   }
-  input:focus,textarea:focus,.select:focus,.searchable:focus{
+  input:focus,textarea:focus,.select:focus{
     box-shadow:0 6px 18px rgba(153,183,213,0.12);
     border-color:var(--accent);
   }
   textarea{min-height:64px;resize:vertical;}
 
   .full{grid-column:1/-1;}
-  .row-inline{display:flex;gap:8px;align-items:center;justify-content:flex-end}
   .btn{
     width:100%;
     padding:12px 16px;
@@ -76,8 +75,27 @@
     transition:background .2s ease;
   }
   .btn:hover{background:linear-gradient(180deg,#a2c1df,#89abc8);}
-  .hint{font-size:12px;color:var(--muted);margin-top:8px;}
   footer.small{text-align:center;margin-top:14px;font-size:12px;color:var(--muted)}
+
+  /* Toast notification */
+  .toast{
+    position:fixed;
+    bottom:20px;
+    right:20px;
+    background:#0f172a;
+    color:white;
+    padding:10px 16px;
+    border-radius:8px;
+    box-shadow:0 4px 12px rgba(0,0,0,0.2);
+    opacity:0;
+    transform:translateY(20px);
+    transition:all .3s ease;
+    z-index:9999;
+  }
+  .toast.show{
+    opacity:1;
+    transform:translateY(0);
+  }
 </style>
 </head>
 <body>
@@ -133,11 +151,13 @@
   <footer class="small">💸 Data akan dikirim ke Google Sheet tab <b>💸CASHFLOW</b></footer>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 /* =========================
    KONFIGURASI
    ========================= */
-const API_URL = "https://script.google.com/macros/s/AKfycbxoSdJxK2AftPCw8tyFtJJEqLFRB0YeJ-hSMXQT23PK2zj_TD16XHRVPWZ2ghazOQ8TdA/exec"; // GANTI dengan Web App kamu
+const API_URL = "https://script.google.com/macros/s/AKfycbxoSdJxK2AftPCw8tyFtJJEqLFRB0YeJ-hSMXQT23PK2zj_TD16XHRVPWZ2ghazOQ8TdA/exec"; // Ganti dengan Web App URL kamu
 
 const CATEGORIES = {
   "PENDAPATAN":["Gaji","Ortu/Mertua","Reimburse Greenway","Piutang","INC 4","INC 5"],
@@ -170,9 +190,20 @@ document.addEventListener("DOMContentLoaded",()=>{
 });
 
 /* =========================
+   TOAST FUNCTION
+   ========================= */
+function showToast(msg, success=true){
+  const toast=document.getElementById("toast");
+  toast.textContent=msg;
+  toast.style.background=success?"#16a34a":"#dc2626";
+  toast.classList.add("show");
+  setTimeout(()=>toast.classList.remove("show"),3000);
+}
+
+/* =========================
    SUBMIT FORM
    ========================= */
-document.getElementById("laporForm").addEventListener("submit",async(e)=>{
+document.getElementById("laporForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = e.target.querySelector("button[type=submit]");
   btn.disabled = true;
@@ -185,21 +216,21 @@ document.getElementById("laporForm").addEventListener("submit",async(e)=>{
     total: document.getElementById("total").value
   };
 
-  try{
-    const res = await fetch(API_URL,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(data)
+  try {
+    await fetch(API_URL, {
+      method: "POST",
+      mode: "no-cors", // supaya tidak error CORS
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
     });
-    const text = await res.text();
-    if(!res.ok) throw new Error(text);
-    alert("✅ Data berhasil dikirim!");
+
+    showToast("✅ Data berhasil dikirim!");
     e.target.reset();
     document.getElementById("tanggal").value = new Date().toISOString().split("T")[0];
-  }catch(err){
+  } catch (err) {
     console.error(err);
-    alert("⚠️ Gagal mengirim data.\nPastikan Web App URL benar dan diatur: 'Anyone, even anonymous'.");
-  }finally{
+    showToast("⚠️ Gagal mengirim data.", false);
+  } finally {
     btn.disabled = false;
     btn.textContent = "Kirim";
   }
