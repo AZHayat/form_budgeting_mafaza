@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Form Laporan Keuangan — Simple</title>
+<style>
+  :root{
+    --accent: #99b7d5;
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --muted: #6b7280;
+    --radius: 12px;
+    --shadow: 0 6px 18px rgba(15,23,42,0.06);
+    --glass: rgba(255,255,255,0.7);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    background: linear-gradient(180deg, #fbfdff 0%, var(--bg) 100%);
+    color:#0f172a;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+    padding:24px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+  }
+
+  .container{
+    width:100%;
+    max-width:760px;
+    background:var(--card);
+    border-radius:18px;
+    padding:20px;
+    box-shadow:var(--shadow);
+  }
+
+  h1{
+    margin:0 0 8px 0;
+    font-size:20px;
+    letter-spacing:-0.2px;
+  }
+  p.lead{
+    margin:0 0 18px 0;
+    color:var(--muted);
+    font-size:13px;
+  }
+
+  form.row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+  }
+
+  @media (max-width:640px){ form.row{ grid-template-columns: 1fr; } }
+
+  .field{
+    display:flex;
+    flex-direction:column;
+  }
+  label{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  input[type="text"], input[type="number"], textarea, .select, .searchable{
+    border:1px solid #e6e9ef;
+    background:transparent;
+    padding:10px 12px;
+    border-radius:10px;
+    outline:none;
+    font-size:15px;
+    transition: box-shadow .18s ease, transform .12s ease;
+  }
+  input:focus, textarea:focus, .select:focus, .searchable:focus{
+    box-shadow: 0 6px 18px rgba(153,183,213,0.12);
+    transform: translateY(-1px);
+    border-color:var(--accent);
+  }
+  textarea{ min-height:64px; resize:vertical; }
+
+  .full{ grid-column: 1 / -1; }
+
+  .row-inline{ display:flex; gap:8px; align-items:center; }
+  .btn{
+    padding:10px 14px;
+    border-radius:10px;
+    background:linear-gradient(180deg,var(--accent), #8fb0c9);
+    color:white;
+    border:none;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow: 0 6px 18px rgba(153,183,213,0.12);
+  }
+  .btn:active{ transform: translateY(1px); }
+  .hint{ font-size:12px; color:var(--muted); margin-top:8px; }
+
+  /* datepicker popup */
+  .datepicker {
+    position:relative;
+  }
+  .dp-input{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .dp-popup{
+    position:absolute;
+    top:calc(100% + 8px);
+    left:0;
+    width:280px;
+    background:var(--card);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    padding:12px;
+    z-index:40;
+    opacity:0;
+    transform: translateY(-6px);
+    pointer-events:none;
+    transition:opacity .18s ease, transform .18s ease;
+  }
+  .dp-popup.show{
+    opacity:1;
+    transform: translateY(0);
+    pointer-events:auto;
+  }
+  .dp-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:8px;
+  }
+  .dp-grid{
+    display:grid;
+    grid-template-columns:repeat(7,1fr);
+    gap:6px;
+  }
+  .dp-cell{
+    padding:8px;
+    text-align:center;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:13px;
+  }
+  .dp-cell:hover{ background:#f1f5f9; }
+  .dp-cell.active{
+    background:var(--accent);
+    color:white;
+    font-weight:600;
+  }
+
+  /* searchable dropdown */
+  .searchable-wrap{
+    position:relative;
+  }
+  .dropdown-list{
+    position:absolute;
+    top:calc(100% + 8px);
+    left:0;
+    right:0;
+    max-height:220px;
+    overflow:auto;
+    background:var(--card);
+    border-radius:12px;
+    box-shadow:var(--shadow);
+    padding:8px;
+    z-index:40;
+    display:none;
+  }
+  .dropdown-list.show{ display:block; animation: fadeIn .12s ease; }
+  .dropdown-item{
+    padding:8px 10px;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:14px;
+  }
+  .dropdown-item:hover{ background:#f1f5f9; }
+
+  @keyframes fadeIn {
+    from{ opacity:0; transform: translateY(-6px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .meta-row{ display:flex; gap:8px; align-items:center; justify-content:space-between; margin-top:12px; }
+  .muted-small{ color:var(--muted); font-size:13px; }
+
+  footer.small{ margin-top:14px; font-size:12px; color:var(--muted); text-align:center; }
+
+</style>
+</head>
+<body>
+  <div class="container" role="main">
+    <h1>Form Laporan Keuangan</h1>
+    <p class="lead">Masukkan transaksi — mobile friendly. Pilih kategori utama dulu untuk memfilter kategori detail. (kategori utama <strong>tidak</strong> dikirim).</p>
+
+    <form id="laporForm" class="row" autocomplete="off">
+      <!-- tanggal -->
+      <div class="field full datepicker">
+        <label for="tanggal">Tanggal</label>
+        <div class="dp-input" style="gap:8px;">
+          <input type="text" id="tanggal" name="tanggal" class="dp-field" placeholder="Pilih tanggal" readonly style="flex:1;"/>
+          <button type="button" id="dpToggle" class="btn" aria-label="Pilih tanggal" style="padding:8px 10px;">📅</button>
+        </div>
+        <div id="dpPopup" class="dp-popup" aria-hidden="true">
+          <div class="dp-head">
+            <button type="button" id="prevMonth" aria-label="Bulan sebelumnya">◀</button>
+            <div id="dpMonthLabel" style="font-weight:600"></div>
+            <button type="button" id="nextMonth" aria-label="Bulan berikutnya">▶</button>
+          </div>
+          <div class="dp-grid" id="dpGrid">
+            <!-- hari ming.. -->
+          </div>
+        </div>
+      </div>
+
+      <!-- keterangan -->
+      <div class="field full">
+        <label for="keterangan">Keterangan</label>
+        <textarea id="keterangan" name="keterangan" placeholder="Contoh: Beli makan siang / Transport ke kantor"></textarea>
+      </div>
+
+      <!-- kategori utama -->
+      <div class="field">
+        <label for="kategoriUtama">Kategori Utama (filter)</label>
+        <select id="kategoriUtama" class="select">
+          <option value="" selected>Pilih kategori utama</option>
+          <option value="PENDAPATAN">PENDAPATAN</option>
+          <option value="KEBUTUHAN">KEBUTUHAN</option>
+          <option value="KEINGINAN">KEINGINAN</option>
+          <option value="LAINNYA">LAINNYA</option>
+          <option value="SIMPANAN">SIMPANAN</option>
+        </select>
+        <div class="hint">Hanya untuk memfilter kategori detail. Tidak disimpan ke database.</div>
+      </div>
+
+      <!-- kategori detail (searchable) -->
+      <div class="field">
+        <label for="kategoriDetail">Kategori (detail)</label>
+        <div class="searchable-wrap">
+          <input id="kategoriDetail" class="searchable" placeholder="Ketik untuk cari kategori..." autocomplete="off">
+          <div id="dropList" class="dropdown-list" role="listbox" aria-hidden="true"></div>
+        </div>
+      </div>
+
+      <!-- total -->
+      <div class="field">
+        <label for="total">Total (Rp)</label>
+        <input id="total" name="total" type="number" min="0" placeholder="0" inputmode="numeric">
+      </div>
+
+      <!-- spacer -->
+      <div class="full" style="height:4px;"></div>
+
+      <!-- submit -->
+      <div class="full row-inline" style="justify-content:flex-end;">
+        <div class="muted-small">Periksa kembali sebelum submit</div>
+        <button type="submit" class="btn">Kirim</button>
+      </div>
+
+      <div class="full">
+        <div class="hint">Setelah submit, form akan mengirim JSON ke Apps Script. Ganti URL di script bagian <code>API_URL</code>.</div>
+      </div>
+    </form>
+
+    <footer class="small">Built for GitHub Pages — copy & paste ke <code>index.html</code></footer>
+  </div>
+
+<script>
+/* =========================
+   CONFIG
+   ========================= */
+const API_URL = "REPLACE_WITH_YOUR_APPS_SCRIPT_URL"; // <-- Ganti dengan URL Apps Script Web App mu
+
+/* Kategori mapping (utama -> daftar detail) */
+const CATEGORIES = {
+  "PENDAPATAN": [
+    "Gaji","Ortu/Mertua","Reimburse Greenway","Piutang","INC 4","INC 5","INC 6"
+  ],
+  "KEBUTUHAN": [
+    "Mamin","Cicilan","Tagihan","Iuran","Transportasi","Hana","Sembako","Maintenance","Kesehatan","NEEDS 10"
+  ],
+  "KEINGINAN": [
+    "Shoping","Healing","Kredit","Jajan","Sedekah","WANTS 6","WANTS 7","WANTS 8","WANTS 9","WANTS 10"
+  ],
+  "LAINNYA": [
+    "Bon Greenway","Admin","Buwuh","OTHERS 4","OTHERS 5","OTHERS 6","OTHERS 7","OTHERS 8","OTHERS 9","OTHERS 10"
+  ],
+  "SIMPANAN": [
+    "Simpanan","Darurat","Investasi","SAVE 1","SAVE 2","SAVE 3","SAVE 4"
+  ]
+};
+
+/* Flatten all details for fallback (if no utama selected) */
+const ALL_DETAILS = Array.from(new Set([].concat(...Object.values(CATEGORIES))));
+
+/* =========================
+   Utilities
+   ========================= */
+function el(q){ return document.querySelector(q); }
+function elAll(q){ return Array.from(document.querySelectorAll(q)); }
+function formatISODate(d){
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+/* =========================
+   DATEPICKER (simple)
+   ========================= */
+(function(){
+  const dpToggle = el('#dpToggle');
+  const dpPopup = el('#dpPopup');
+  const dpField = el('#tanggal');
+  const dpGrid = el('#dpGrid');
+  const dpMonthLabel = el('#dpMonthLabel');
+  const prev = el('#prevMonth'), next = el('#nextMonth');
+
+  let viewDate = new Date(); // month/year shown
+  let selected = null;
+
+  function build(){
+    dpGrid.innerHTML = '';
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    dpMonthLabel.textContent = viewDate.toLocaleString('id-ID', { month:'long', year:'numeric' });
+
+    // start day of month
+    const first = new Date(year, month, 1);
+    const startWeekday = first.getDay(); // 0=Sun
+    // generate previous month blanks
+    // We'll show Sun-Sat; show weekday labels first
+    const weekNames = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+    for(let i=0;i<7;i++){
+      const w = document.createElement('div');
+      w.textContent = weekNames[i];
+      w.style.fontSize='11px';
+      w.style.color='var(--muted)';
+      w.style.textAlign='center';
+      w.style.padding='6px 0';
+      dpGrid.appendChild(w);
+    }
+    // determine days
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+    // first day position
+    const offset = first.getDay(); // 0-6
+    // blanks
+    for(let i=0;i<offset;i++){
+      const b = document.createElement('div');
+      dpGrid.appendChild(b);
+    }
+    for(let d=1; d<=daysInMonth; d++){
+      const cell = document.createElement('div');
+      cell.className = 'dp-cell';
+      cell.textContent = d;
+      const cellDate = new Date(year, month, d);
+      cell.addEventListener('click', ()=>{
+        selected = cellDate;
+        dpField.value = formatISODate(cellDate);
+        hide();
+      });
+      // highlight today
+      const today = new Date();
+      if (cellDate.toDateString() === today.toDateString()){
+        cell.style.border = '1px solid rgba(0,0,0,0.06)';
+      }
+      // mark selected
+      if (dpField.value && dpField.value === formatISODate(cellDate)){
+        cell.classList.add('active');
+      }
+      dpGrid.appendChild(cell);
+    }
+  }
+
+  function show(){
+    dpPopup.classList.add('show');
+    dpPopup.setAttribute('aria-hidden','false');
+  }
+  function hide(){
+    dpPopup.classList.remove('show');
+    dpPopup.setAttribute('aria-hidden','true');
+  }
+
+  dpToggle.addEventListener('click', ()=>{
+    if (dpPopup.classList.contains('show')) hide(); else show();
+  });
+
+  prev.addEventListener('click', ()=>{
+    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()-1, 1);
+    build();
+  });
+  next.addEventListener('click', ()=>{
+    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 1);
+    build();
+  });
+
+  // clicking outside closes
+  document.addEventListener('click', (e)=>{
+    if (!e.target.closest('.datepicker')) hide();
+  });
+
+  // initialize with today
+  const today = new Date();
+  dpField.value = formatISODate(today);
+  viewDate = new Date(today.getFullYear(), today.getMonth(), 1);
+  build();
+})();
+
+/* =========================
+   SEARCHABLE CATEGORY (dynamic)
+   ========================= */
+(function(){
+  const utama = el('#kategoriUtama');
+  const detailInput = el('#kategoriDetail');
+  const dropList = el('#dropList');
+
+  function listFor(key){
+    if (!key) return ALL_DETAILS;
+    const k = key.trim();
+    return (CATEGORIES[k] || ALL_DETAILS);
+  }
+
+  function renderList(items, filterText = ''){
+    dropList.innerHTML = '';
+    const q = (filterText||'').toLowerCase();
+    const filtered = items.filter(i => i.toLowerCase().includes(q));
+    if (filtered.length === 0){
+      const none = document.createElement('div');
+      none.className = 'dropdown-item';
+      none.textContent = 'Tidak ada hasil';
+      dropList.appendChild(none);
+    } else {
+      filtered.forEach(it=>{
+        const d = document.createElement('div');
+        d.className = 'dropdown-item';
+        d.textContent = it;
+        d.addEventListener('click', ()=>{
+          detailInput.value = it;
+          hideList();
+        });
+        dropList.appendChild(d);
+      });
+    }
+  }
+
+  function showList(){
+    dropList.classList.add('show');
+    dropList.setAttribute('aria-hidden','false');
+  }
+  function hideList(){
+    dropList.classList.remove('show');
+    dropList.setAttribute('aria-hidden','true');
+  }
+
+  // on utama change -> set list
+  utama.addEventListener('change', ()=>{
+    const arr = listFor(utama.value);
+    renderList(arr, detailInput.value);
+    showList();
+  });
+
+  detailInput.addEventListener('input', (e)=>{
+    const arr = listFor(utama.value);
+    renderList(arr, e.target.value);
+    showList();
+  });
+
+  detailInput.addEventListener('focus', ()=>{
+    const arr = listFor(utama.value);
+    renderList(arr, detailInput.value);
+    showList();
+  });
+
+  document.addEventListener('click', (e)=>{
+    if (!e.target.closest('.searchable-wrap')) hideList();
+  });
+
+  // keyboard: Enter picks first
+  detailInput.addEventListener('keydown', (e)=>{
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      const first = dropList.querySelector('.dropdown-item');
+      if (first) {
+        first.click();
+      }
+      hideList();
+    }
+  });
+})();
+
+// Set default date ke hari ini
+document.addEventListener("DOMContentLoaded", function() {
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, '0');
+  const dd = String(today.getDate()).padStart(2, '0');
+  document.getElementById("tanggal").value = `${yyyy}-${mm}-${dd}`;
+});
+
+
+/* =========================
+   FORM SUBMIT
+   ========================= */
+(function(){
+  const form = el('#laporForm');
+
+  form.addEventListener('submit', async (ev)=>{
+    ev.preventDefault();
+
+    const tanggal = el('#tanggal').value.trim();
+    const keterangan = el('#keterangan').value.trim();
+    const kategori = el('#kategoriDetail').value.trim();
+    const totalRaw = el('#total').value;
+    const total = totalRaw ? Number(totalRaw) : 0;
+
+    if (!tanggal || !keterangan || !kategori || !total){
+      alert('Lengkapi semua field: tanggal, keterangan, kategori, dan total.');
+      return;
+    }
+
+    const payload = {
+      tanggal,
+      keterangan,
+      kategori,
+      total
+    };
+
+    try {
+      // simple visual disable
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = true;
+      btn.textContent = 'Mengirim...';
+
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        throw new Error('HTTP ' + res.status);
+      }
+
+      // success
+      alert('Data berhasil dikirim!');
+      form.reset();
+      // reset tanggal to today
+      const today = new Date();
+      el('#tanggal').value = today.toISOString().slice(0,10);
+    } catch (err) {
+      console.error(err);
+      alert('Gagal mengirim data. Periksa API URL dan izin Apps Script (CORS / akses).');
+    } finally {
+      const btn = form.querySelector('button[type="submit"]');
+      btn.disabled = false;
+      btn.textContent = 'Kirim';
+    }
+  });
+})();
+
+/* =========================
+   Init small defaults
+   ========================= */
+(function(){
+  // set today
+  el('#tanggal').value = new Date().toISOString().slice(0,10);
+  // preload list
+  const e = new Event('input');
+  el('#kategoriDetail').dispatchEvent(e);
+})();
+</script>
+</body>
+</html>
