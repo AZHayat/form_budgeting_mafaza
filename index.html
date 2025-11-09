@@ -3,105 +3,156 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Form Laporan Keuangan — Simple</title>
+<title>Form Laporan Keuangan Bani Hayat</title>
 <style>
   :root{
-    --accent: #99b7d5;
-    --bg: #f8fafc;
+    --accent: #3b82f6;
+    --bg: #f9fbfd;
     --card: #ffffff;
     --muted: #6b7280;
-    --radius: 12px;
-    --shadow: 0 6px 18px rgba(15,23,42,0.06);
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    --radius: 14px;
+    --shadow: 0 6px 18px rgba(0,0,0,0.06);
+    font-family: 'Inter', system-ui, sans-serif;
   }
 
-  *{box-sizing:border-box}
+  *{box-sizing:border-box;margin:0;padding:0;}
+
   body{
-    margin:0;
-    background:linear-gradient(180deg, #fbfdff 0%, var(--bg) 100%);
+    background: var(--bg);
     color:#0f172a;
-    padding:24px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
     min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+    padding:0;
   }
 
   .container{
     width:100%;
-    max-width:760px;
+    max-width:900px;
     background:var(--card);
-    border-radius:18px;
-    padding:24px;
+    border-radius:0;
     box-shadow:var(--shadow);
+    padding:20px 20px 40px;
+    min-height:100vh;
   }
 
-  h1{margin:0 0 8px;font-size:20px}
-  p.lead{margin:0 0 18px;color:var(--muted);font-size:13px}
+  @media(min-width:768px){
+    .container{
+      border-radius: var(--radius);
+      margin:24px;
+      min-height:auto;
+    }
+  }
+
+  header{
+    text-align:center;
+    margin-bottom:24px;
+  }
+
+  h1{
+    font-size:22px;
+    font-weight:700;
+    margin-bottom:6px;
+  }
+
+  p.lead{
+    color:var(--muted);
+    font-size:14px;
+  }
 
   form.row{
     display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:12px;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:16px;
   }
-  @media(max-width:640px){form.row{grid-template-columns:1fr}}
 
   .field{display:flex;flex-direction:column;}
-  label{font-size:12px;color:var(--muted);margin-bottom:6px;}
-  input[type="text"],input[type="number"],input[type="date"],textarea,.select{
-    border:1px solid #e6e9ef;
-    padding:10px 12px;
+  label{font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:500;}
+
+  input, textarea, select{
+    border:1px solid #e5e7eb;
     border-radius:10px;
+    padding:12px;
     font-size:15px;
-    transition:box-shadow .18s ease,transform .12s ease;
+    transition:all .2s ease;
+    width:100%;
   }
-  input:focus,textarea:focus,.select:focus{
-    box-shadow:0 6px 18px rgba(153,183,213,0.12);
+
+  input:focus,textarea:focus,select:focus{
+    outline:none;
     border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(59,130,246,0.1);
   }
-  textarea{min-height:64px;resize:vertical;}
+
+  textarea{resize:vertical;min-height:70px;}
 
   .full{grid-column:1/-1;}
+
   .btn{
     width:100%;
-    padding:12px 16px;
+    padding:14px 16px;
     border-radius:10px;
-    background:linear-gradient(180deg,var(--accent),#8fb0c9);
+    background:var(--accent);
     color:white;
     border:none;
     font-weight:600;
     cursor:pointer;
-    box-shadow:0 6px 18px rgba(153,183,213,0.12);
-    transition:background .2s ease;
+    font-size:16px;
+    transition:all .25s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
   }
-  .btn:hover{background:linear-gradient(180deg,#a2c1df,#89abc8);}
-  footer.small{text-align:center;margin-top:14px;font-size:12px;color:var(--muted)}
 
-  /* Toast notification */
+  .btn:hover{background:#2563eb;}
+  .btn:disabled{opacity:0.7;cursor:not-allowed;}
+
+  /* Spinner loading */
+  .spinner{
+    border:3px solid #e5e7eb;
+    border-top:3px solid white;
+    border-radius:50%;
+    width:16px;
+    height:16px;
+    animation:spin 1s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  footer{
+    text-align:center;
+    margin-top:28px;
+    font-size:13px;
+    color:var(--muted);
+  }
+
+  /* Toast */
   .toast{
     position:fixed;
     bottom:20px;
-    right:20px;
+    left:50%;
+    transform:translateX(-50%) translateY(30px);
     background:#0f172a;
     color:white;
-    padding:10px 16px;
+    padding:10px 18px;
     border-radius:8px;
-    box-shadow:0 4px 12px rgba(0,0,0,0.2);
     opacity:0;
-    transform:translateY(20px);
     transition:all .3s ease;
     z-index:9999;
   }
   .toast.show{
     opacity:1;
-    transform:translateY(0);
+    transform:translateX(-50%) translateY(0);
   }
 </style>
 </head>
 <body>
 <div class="container">
-  <h1>Form Laporan Keuangan</h1>
-  <p class="lead">Masukkan transaksi — simple dan mobile friendly.</p>
+  <header>
+    <h1>Form Laporan Keuangan</h1>
+    <p class="lead">Catat transaksi keuangan dengan mudah — mobile friendly.</p>
+  </header>
 
   <form id="laporForm" class="row" autocomplete="off">
     <!-- tanggal -->
@@ -119,21 +170,22 @@
     <!-- kategori utama -->
     <div class="field">
       <label for="kategoriUtama">Kategori Utama</label>
-      <select id="kategoriUtama" class="select">
+      <select id="kategoriUtama" class="select" required>
         <option value="">Pilih kategori utama</option>
-        <option value="PENDAPATAN">PENDAPATAN</option>
-        <option value="KEBUTUHAN">KEBUTUHAN</option>
-        <option value="KEINGINAN">KEINGINAN</option>
-        <option value="LAINNYA">LAINNYA</option>
-        <option value="SIMPANAN">SIMPANAN</option>
+        <option value="PENDAPATAN">💰 Pendapatan</option>
+        <option value="KEBUTUHAN">📦 Kebutuhan</option>
+        <option value="KEINGINAN">🎁 Keinginan</option>
+        <option value="LAINNYA">🧾 Lainnya</option>
+        <option value="SIMPANAN">🏦 Simpanan</option>
       </select>
     </div>
 
     <!-- kategori detail -->
     <div class="field">
       <label for="kategoriDetail">Kategori Detail</label>
-      <input id="kategoriDetail" name="kategori" list="kategoriList" placeholder="Ketik atau pilih" required>
-      <datalist id="kategoriList"></datalist>
+      <select id="kategoriDetail" class="select" required>
+        <option value="">Pilih kategori detail</option>
+      </select>
     </div>
 
     <!-- total -->
@@ -144,11 +196,13 @@
 
     <!-- submit -->
     <div class="field full">
-      <button type="submit" class="btn">Kirim</button>
+      <button type="submit" class="btn">
+        <span>Kirim</span>
+      </button>
     </div>
   </form>
 
-  <footer class="small">💸 Data akan dikirim ke Google Sheet tab <b>💸CASHFLOW</b></footer>
+  <footer>💸 Data akan dikirim ke Google Sheet tab <b>💸CASHFLOW</b></footer>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -157,34 +211,35 @@
 /* =========================
    KONFIGURASI
    ========================= */
-const API_URL = "https://script.google.com/macros/s/AKfycbxoSdJxK2AftPCw8tyFtJJEqLFRB0YeJ-hSMXQT23PK2zj_TD16XHRVPWZ2ghazOQ8TdA/exec"; // Ganti dengan Web App URL kamu
+const API_URL = "https://script.google.com/macros/s/AKfycbxoSdJxK2AftPCw8tyFtJJEqLFRB0YeJ-hSMXQT23PK2zj_TD16XHRVPWZ2ghazOQ8TdA/exec";
 
 const CATEGORIES = {
-  "PENDAPATAN":["Gaji","Ortu/Mertua","Reimburse Greenway","Piutang","INC 4","INC 5"],
-  "KEBUTUHAN":["Mamin","Cicilan","Tagihan","Iuran","Transportasi","Hana","Sembako","Maintenance","Kesehatan"],
-  "KEINGINAN":["Shoping","Healing","Kredit","Jajan","Sedekah"],
-  "LAINNYA":["Bon Greenway","Admin","Buwuh"],
-  "SIMPANAN":["Simpanan","Darurat","Investasi"]
+  "PENDAPATAN":["Gaji","Ortu/Mertua","Reimburse Greenway","Piutang","Bonus","Lainnya"],
+  "KEBUTUHAN":["Makan & Minum","Cicilan","Tagihan","Iuran","Transportasi","Kesehatan","Sembako"],
+  "KEINGINAN":["Belanja","Hobi","Healing","Kredit Barang","Sedekah"],
+  "LAINNYA":["Bon Greenway","Admin","Buwuh","Tak Terduga"],
+  "SIMPANAN":["Simpanan","Dana Darurat","Investasi"]
 };
 
 /* =========================
    INISIALISASI
    ========================= */
 document.addEventListener("DOMContentLoaded",()=>{
-  const tgl = document.getElementById("tanggal");
-  const today = new Date().toISOString().split("T")[0];
-  tgl.value = today;
+  const tgl=document.getElementById("tanggal");
+  const today=new Date().toISOString().split("T")[0];
+  tgl.value=today;
 
-  const utama = document.getElementById("kategoriUtama");
-  const list = document.getElementById("kategoriList");
+  const utama=document.getElementById("kategoriUtama");
+  const detail=document.getElementById("kategoriDetail");
 
   utama.addEventListener("change",()=>{
-    list.innerHTML="";
-    const arr = CATEGORIES[utama.value] || [];
+    detail.innerHTML='<option value="">Pilih kategori detail</option>';
+    const arr=CATEGORIES[utama.value]||[];
     arr.forEach(k=>{
       const opt=document.createElement("option");
       opt.value=k;
-      list.appendChild(opt);
+      opt.textContent=k;
+      detail.appendChild(opt);
     });
   });
 });
@@ -203,36 +258,41 @@ function showToast(msg, success=true){
 /* =========================
    SUBMIT FORM
    ========================= */
-document.getElementById("laporForm").addEventListener("submit", async (e) => {
+document.getElementById("laporForm").addEventListener("submit",async e=>{
   e.preventDefault();
-  const btn = e.target.querySelector("button[type=submit]");
-  btn.disabled = true;
-  btn.textContent = "Mengirim...";
+  const btn=e.target.querySelector("button[type=submit]");
+  const span=btn.querySelector("span");
+  span.textContent="Mengirim...";
+  const spinner=document.createElement("div");
+  spinner.className="spinner";
+  btn.prepend(spinner);
+  btn.disabled=true;
 
-  const data = {
-    tanggal: document.getElementById("tanggal").value,
-    keterangan: document.getElementById("keterangan").value.trim(),
-    kategori: document.getElementById("kategoriDetail").value.trim(),
-    total: document.getElementById("total").value
+  const data={
+    tanggal:document.getElementById("tanggal").value,
+    keterangan:document.getElementById("keterangan").value.trim(),
+    kategori:document.getElementById("kategoriDetail").value.trim(),
+    total:document.getElementById("total").value
   };
 
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      mode: "no-cors", // supaya tidak error CORS
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data)
+  try{
+    await fetch(API_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(data)
     });
 
     showToast("✅ Data berhasil dikirim!");
     e.target.reset();
-    document.getElementById("tanggal").value = new Date().toISOString().split("T")[0];
-  } catch (err) {
+    document.getElementById("tanggal").value=new Date().toISOString().split("T")[0];
+  }catch(err){
     console.error(err);
-    showToast("⚠️ Gagal mengirim data.", false);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "Kirim";
+    showToast("⚠️ Gagal mengirim data.",false);
+  }finally{
+    btn.disabled=false;
+    spinner.remove();
+    span.textContent="Kirim";
   }
 });
 </script>
